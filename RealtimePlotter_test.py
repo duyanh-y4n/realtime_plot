@@ -32,7 +32,7 @@ class RealtimePlotterClassTest(unittest.TestCase):
     def setUp(self):
         self.data = np.random.randint(low=-10, high=10, size=(col, row))
         self.dataplot = DataPlot(
-            row, col, option=DataplotOption.TIMESTAMP_NONE.value)
+            row, col, option=DataplotOption.TIMESTAMP_NONE)
 
     def tearDown(self):
         # tear down code
@@ -50,7 +50,7 @@ class PlottingTest(unittest.TestCase):
         #           use plt.pause in separated process
         #           update data in database
         dataplot = DataPlot(
-            row, col, option=DataplotOption.TIMESTAMP_CUSTOM.value)
+            row, col, option=DataplotOption.TIMESTAMP_CUSTOM)
         # simulating time ticks that saved in DB/cahed memory
         self.timestamp_custom = []
         ticks_start = 0
@@ -63,7 +63,8 @@ class PlottingTest(unittest.TestCase):
         # plt.show()
         self.realtimeplotter.config_plots(axes, ylim=[-11, 11])
         for i in range(datasource.shape[0]):
-            dataplot.append(datasource[i], self.timestamp_custom[i])
+            self.realtimeplotter.dataplot.append(
+                datasource[i], self.timestamp_custom[i])
             self.realtimeplotter.plot_data()
             plt.pause(plot_update_interval)
         print(dataplot)
@@ -75,14 +76,14 @@ class PlottingTest(unittest.TestCase):
         #           use plt.pause in separated process
         #           update data in database
         dataplot = DataPlot(
-            row, col, option=DataplotOption.TIMESTAMP_AUTO.value)
+            row, col, option=DataplotOption.TIMESTAMP_AUTO)
         self.realtimeplotter = RealtimePlotter(dataplot)
         fig, axes = plt.subplots()
         plt.title('Plotting Data')
         # plt.show()
         self.realtimeplotter.config_plots(axes, ylim=[-11, 11])
         for i in range(datasource.shape[0]):
-            dataplot.append(datasource[i])
+            self.realtimeplotter.dataplot.append(datasource[i])
             # time ticks auto. generated base on delays interval
             time.sleep(data_interval)
             self.realtimeplotter.plot_data()
@@ -95,7 +96,7 @@ class PlottingTest(unittest.TestCase):
         #           use plt.pause in separated process
         #           update data in database
         dataplot = DataPlot(
-            row, col, option=DataplotOption.TIMESTAMP_NONE.value)
+            row, col, option=DataplotOption.TIMESTAMP_NONE)
         self.realtimeplotter = RealtimePlotter(dataplot)
         fig, axes = plt.subplots()
         plt.title('Plotting Data')
@@ -103,7 +104,7 @@ class PlottingTest(unittest.TestCase):
         self.realtimeplotter.config_plots(
             axes, y_labels=['a', 'b', 'c'], ylim=[-11, 11])
         for i in range(datasource.shape[0]):
-            dataplot.append(datasource[i])
+            self.realtimeplotter.dataplot.append(datasource[i])
             self.realtimeplotter.plot_data()
             plt.pause(plot_update_interval)
         input("Continue(press any key)?")

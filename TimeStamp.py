@@ -16,11 +16,11 @@ class TimeStamp():
     """
 
     def __init__(self, time_type='millis'):
-        self.startTime = time.time()
+        self.startTime = time.perf_counter()
         self.time_type = time_type
 
     def reset(self):
-        self.startTime = time.time()
+        self.startTime = time.perf_counter()
 
     def sec(self, round=False):
         if round:

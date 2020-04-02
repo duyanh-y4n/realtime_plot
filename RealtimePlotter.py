@@ -33,13 +33,14 @@ class RealtimePlotter(object):
         # print('data')
         # print(data)
         # set limits
-        if ylim == [] and self.dataplot.option in [DataplotOption.TIMESTAMP_AUTO.value, DataplotOption.TIMESTAMP_CUSTOM]:
+        # TODO: auto ylim (cause bug, not work yet!!)
+        if ylim == [] and self.dataplot.option in [DataplotOption.TIMESTAMP_AUTO, DataplotOption.TIMESTAMP_CUSTOM]:
             # last row is x-axis and wont be counted
             ylim = [
                 np.min(data[:-1]),
                 np.max(data[:-1])
             ]
-        elif ylim == [] and self.dataplot.option == DataplotOption.TIMESTAMP_NONE.value:
+        elif ylim == [] and self.dataplot.option == DataplotOption.TIMESTAMP_NONE:
             ylim = [
                 np.min(data[:])*0.9,
                 np.max(data[:])*1.1
@@ -55,12 +56,12 @@ class RealtimePlotter(object):
                 self.y_labels.append('sensor '+str(i))
         else:
             self.y_labels = y_labels
-        if x_label == '' and self.dataplot.option == DataplotOption.TIMESTAMP_AUTO.value:
+        if x_label == '' and self.dataplot.option == DataplotOption.TIMESTAMP_AUTO:
             self.axes.set_xlabel(
                 'time in ' + self.dataplot.timestamp.time_type)
-        elif x_label == '' and self.dataplot.option == DataplotOption.TIMESTAMP_NONE.value:
-            self.axes.set_xlabel('n. measurement(0=newest)')
-        elif x_label == '' and self.dataplot.option == DataplotOption.TIMESTAMP_CUSTOM.value:
+        elif x_label == '' and self.dataplot.option == DataplotOption.TIMESTAMP_NONE:
+            self.axes.set_xlabel('n. measurement(0 = oldest in queue)')
+        elif x_label == '' and self.dataplot.option == DataplotOption.TIMESTAMP_CUSTOM:
             self.axes.set_xlabel('time(custom)')
         else:
             self.axes.set_xlabel(x_label)
@@ -71,22 +72,28 @@ class RealtimePlotter(object):
         self.axes.legend(loc='upper left')
 
     def plot_data(self):
-        if self.dataplot.option in [DataplotOption.TIMESTAMP_AUTO.value, DataplotOption.TIMESTAMP_CUSTOM.value]:
+        if self.dataplot.option in [DataplotOption.TIMESTAMP_AUTO, DataplotOption.TIMESTAMP_CUSTOM]:
             x = np.array(self.dataplot.get_time_ticks())
             for i in range(self.dataplot.row):
                 y = np.array(self.dataplot.get_row(i))
                 self.lines[i].set_data(x, y)
                 # print(x)
                 # print(self.dataplot.get_row(i))
-            self.axes.set_xlim(np.min(x), np.max(x))
-        else:
-            x = np.arange(len(self.dataplot.get_row(0))) - \
-                len(self.dataplot.get_row(0))+1
+        elif self.dataplot.option == DataplotOption.TIMESTAMP_NONE:
+            # update left
+            # x = np.arange(len(self.dataplot.get_row(0)))*-1
+
+            # update right
+            x = np.arange(len(self.dataplot.get_row(0)))
+
             # print(x)
             for i in range(self.dataplot.row):
                 y = np.array(self.dataplot.get_row(i))
                 self.lines[i].set_data(x, y)
                 # print(y)
-            # self.axes.set_xlim(0, self.dataplot.col)
-            self.axes.set_xlim(-self.dataplot.col+1, 0)
+        try:
+            self.axes.set_xlim(np.min(x), np.max(x))
+        except ValueError:
+            # except error when Database leer or no data available yet
+            pass
         self.axes.relim()

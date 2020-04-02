@@ -25,7 +25,7 @@ class DataPlotTimeStampNone(unittest.TestCase):
         # swap col and row to append each new col easily (iterate col through list index)
         self.data = np.random.randint(low=-10, high=10, size=(col, row))
         self.dataplot = DataPlot(
-            row, col, option=DataplotOption.TIMESTAMP_NONE.value)
+            row, col, option=DataplotOption.TIMESTAMP_NONE)
         for i in range(self.data.shape[0]):
             self.dataplot.append(self.data[i])
         # no swap col and row to extend rows normally
@@ -61,7 +61,7 @@ class DataPlotWithTimestampAuto(unittest.TestCase):
         # swap col and row to append each new col easily (iterate col through list index)
         self.data = np.random.randint(low=-10, high=10, size=(col, row))
         self.dataplot = DataPlot(
-            row, col, option=DataplotOption.TIMESTAMP_AUTO.value)
+            row, col, option=DataplotOption.TIMESTAMP_AUTO)
         for i in range(self.data.shape[0]):
             self.dataplot.append(self.data[i])
             time.sleep(0.01)
@@ -100,7 +100,7 @@ class DataPlotWithTimestampCustom(unittest.TestCase):
         # swap col and row to append each new col easily (iterate col through list index)
         self.data = np.random.randint(low=-10, high=10, size=(col, row))
         self.dataplot = DataPlot(
-            row, col, option=DataplotOption.TIMESTAMP_CUSTOM.value)
+            row, col, option=DataplotOption.TIMESTAMP_CUSTOM)
         self.timestamp_custom = []
         ticks_start = 0
         ticks_interval = 50
@@ -119,7 +119,7 @@ class DataPlotWithTimestampCustom(unittest.TestCase):
 
     def test_Should_GetCorrectMultipleColumn_When_AppendNewColumns(self):
         dataplot = DataPlot(
-            row, col, option=DataplotOption.TIMESTAMP_CUSTOM.value)
+            row, col, option=DataplotOption.TIMESTAMP_CUSTOM)
         dataplot.append(self.data_multiple,
                         x=self.timestamp_custom[:data_multiple_col], single=False)
         self.assertEqual(dataplot.get_col(-1)[:-1],

@@ -6,7 +6,7 @@
 # Last Modified By: Duy Anh Pham <duyanh.y4n.pham@gmail.com>
 from TimeStamp import TimeStamp
 from collections import deque
-# import numpy as np
+import numpy as np
 from enum import Enum
 
 
@@ -16,16 +16,18 @@ class DataPlotException(Enum):
     - Name convention: [ CLASS ]_[ METHODE ]_[ EXCEPTION_NAME ]
     """
     DATAPLOT_APPEND_PARAM_X_NOT_SUPPORTED_BY_OPTION = 'x only available by TIMESTAMP_CUSTOM option'
-    DATAPLOT_APPEND_MULTIMODE_UNSUPPORTED_BY_OPTION = 'multimode unsupported by current dataplot option'
+    DATAPLOT_APPEND_MULTIMODE_UNSUPPORTED_BY_OPTION = 'multimode (append multiple values at once) unsupported by current dataplot option'
     DATAPLOT_APPEND_MULTIMODE_X_AND_Y_DIFF_LEN = 'x and y do not have the same length'
     DATAPLOT_APPEND_MULTIMODE_X_NONE_BY_TIMESTAMP_CUSTOM = 'x cant be None by TIMESTAMP_CUSTOM option'
     DATAPLOT_GET_TIME_TICKS_NOT_AVAILABLE = 'time ticks not available by option TIMESTAMP_NONE'
 
 
 class DataplotOption(Enum):
-    TIMESTAMP_NONE = 0 # x axis as numerical
-    TIMESTAMP_AUTO = 1 # x axis as autogenated time ticks (time when new data appended)
-    TIMESTAMP_CUSTOM = 2 # x axis as time ticks (time ticks generated from outside and added as parameter)
+    TIMESTAMP_NONE = 0  # x axis as numerical
+    # x axis as autogenated time ticks (time when new data appended)
+    TIMESTAMP_AUTO = 1
+    # x axis as time ticks (time ticks generated from outside and added as parameter)
+    TIMESTAMP_CUSTOM = 2
 
 
 class DataPlot(object):
@@ -33,10 +35,11 @@ class DataPlot(object):
     """Docstring for DataPlot.
     - Container for Data (e.g. Data from multiple sensor)
     - implement as deque(works like shift register or FIFO)
+    - first element in queue is the oldest, last is the newest
     - all data must have the same x-axis !!
     """
 
-    def __init__(self, row=1, col=20, option=DataplotOption.TIMESTAMP_AUTO.value, time_type='millis'):
+    def __init__(self, row=1, col=20, option=DataplotOption.TIMESTAMP_AUTO, time_type='millis'):
         """Constructor
 
         @param row: y axis data ~ data for 1 measurand
@@ -58,51 +61,51 @@ class DataPlot(object):
         for i in range(row):
             self.data_regs.append(deque(maxlen=col))
         self.option = option
-        if self.option == DataplotOption.TIMESTAMP_AUTO.value:
+        if self.option == DataplotOption.TIMESTAMP_AUTO:
             self.timestamp = TimeStamp(time_type=time_type)
             self.time_ticks = deque(maxlen=col)
-        if self.option == DataplotOption.TIMESTAMP_CUSTOM.value:
+        if self.option == DataplotOption.TIMESTAMP_CUSTOM:
             self.time_ticks = deque(maxlen=col)
 
     def __str__(self):
         self.get_data_as_matrix()
-        if self.option == DataplotOption.TIMESTAMP_AUTO.value or self.option == DataplotOption.TIMESTAMP_CUSTOM.value:
+        if self.option == DataplotOption.TIMESTAMP_AUTO or self.option == DataplotOption.TIMESTAMP_CUSTOM:
             ret = 'data: ' + str(self.data[:-1])
         # last row are time ticks
             ret = ret + ('\ntime: ' + str(self.data[-1]))
-        elif self.option == DataplotOption.TIMESTAMP_NONE.value:
+        elif self.option == DataplotOption.TIMESTAMP_NONE:
             ret = 'data: ' + str(self.data)
         return ret
 
-    def append(self, y, x=None, single=True):
+    def append(self, y, x=[], single=True):
         """append new data vector to class
 
         @param y:  vector y=[y0, y1, y2, ...] or matrix y=[y00 y01 y02, y10 y11 y12, ...]
         @type  param:  list
 
         """
-        if self.option != DataplotOption.TIMESTAMP_CUSTOM.value and x != None:
+        if self.option != DataplotOption.TIMESTAMP_CUSTOM and np.array(x).size != 0:
             raise Exception(
                 DataPlotException.DATAPLOT_APPEND_PARAM_X_NOT_SUPPORTED_BY_OPTION.value)
         if single:
             for i in range(self.row):
                 self.data_regs[i].append(y[i])
-            if self.option == DataplotOption.TIMESTAMP_AUTO.value:
+            if self.option == DataplotOption.TIMESTAMP_AUTO:
                 self.time_ticks.append(self.timestamp.tick())
-            if self.option == DataplotOption.TIMESTAMP_CUSTOM.value:
+            elif self.option == DataplotOption.TIMESTAMP_CUSTOM:
                 self.time_ticks.append(x)
         else:  # multi mode
             for i in range(self.row):
                 self.data_regs[i].extend(y[i])
-            if self.option == DataplotOption.TIMESTAMP_AUTO.value:
+            if self.option == DataplotOption.TIMESTAMP_AUTO:
                 # not supported be cause timestamp can generate multiple ticks but it make no sense
                 raise Exception(
                     DataPlotException.DATAPLOT_APPEND_MULTIMODE_UNSUPPORTED_BY_OPTION.value)
-            if self.option == DataplotOption.TIMESTAMP_CUSTOM.value:
-                if x == None:
+            elif self.option == DataplotOption.TIMESTAMP_CUSTOM:
+                if np.array(x).size == 0 and len(y[0]) != 0:
                     raise Exception(
                         DataPlotException.DATAPLOT_APPEND_MULTIMODE_X_NONE_BY_TIMESTAMP_CUSTOM.value)
-                if len(x) != len(y[0]):
+                elif len(x) != len(y[0]):
                     raise Exception(
                         DataPlotException.DATAPLOT_APPEND_MULTIMODE_X_AND_Y_DIFF_LEN.value)
                 self.time_ticks.extend(x)
@@ -114,7 +117,7 @@ class DataPlot(object):
         self.data = []
         for i in range(self.row):
             self.data.append(list(self.data_regs[i]))
-        if self.option == DataplotOption.TIMESTAMP_AUTO.value or self.option == DataplotOption.TIMESTAMP_CUSTOM.value:
+        if self.option == DataplotOption.TIMESTAMP_AUTO or self.option == DataplotOption.TIMESTAMP_CUSTOM:
             self.data.append(list(self.time_ticks))
         return self.data
 
@@ -126,7 +129,7 @@ class DataPlot(object):
         ret = []
         for i in range(self.row):
             ret.append(list(self.data_regs[i])[index])
-        if self.option == DataplotOption.TIMESTAMP_AUTO.value or self.option == DataplotOption.TIMESTAMP_CUSTOM.value:
+        if self.option == DataplotOption.TIMESTAMP_AUTO or self.option == DataplotOption.TIMESTAMP_CUSTOM:
             ret.append(list(self.time_ticks)[index])
         return ret
 
@@ -142,3 +145,9 @@ class DataPlot(object):
             raise Exception(
                 DataPlotException.DATAPLOT_GET_TIME_TICKS_NOT_AVAILABLE.value)
         return list(self.time_ticks)
+
+    def clear_data_regs(self):
+        for i in range(self.row):
+            self.data_regs[i].clear()
+        if self.option in [DataplotOption.TIMESTAMP_CUSTOM, DataplotOption.TIMESTAMP_AUTO]:
+            self.time_ticks.clear()
