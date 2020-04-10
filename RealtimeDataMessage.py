@@ -42,6 +42,7 @@ class MESSAGES(Enum):
 class RET_TYPE(Enum):
     LIST_SEPARATED = 0
     LIST_KEY_VALUE = 1
+    DICT = 2
 
 
 class MessageParser(object):
@@ -78,6 +79,11 @@ class MessageParser(object):
             return self.last_decoded_msg
         elif ret_type == RET_TYPE.LIST_KEY_VALUE:
             return [self.keys, self.values]
+        elif ret_type == RET_TYPE.DICT:
+            ret = {}
+            for i in range(len(self.keys)):
+                ret[self.keys[i]] = self.values[i]
+            return ret
 
     def encode(self, header, values, labels=None):
         new_msg = header.value + \

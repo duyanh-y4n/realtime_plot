@@ -71,6 +71,12 @@ class TestMessageParser(unittest.TestCase):
         self.assertEqual(ret_type_sep[-2], ret_type_hash[0][-1])
         self.assertEqual(ret_type_sep[-1], ret_type_hash[1][-1])
 
+        ret_type_dict = self.msgParser.decode(
+            msg, ret_type=RET_TYPE.DICT)
+        # print(ret_type_dict)
+        self.assertEqual(list(ret_type_dict.keys()), self.msgParser.keys)
+        self.assertEqual(list(ret_type_dict.values()), self.msgParser.values)
+
     def test_Should_ReturnFalse_When_DecodingUndefinedMessage(self):
         wrong_msg = 'random messages'
         true_msg = 'ack;'
