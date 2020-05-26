@@ -143,6 +143,3 @@ class DataPlotWithTimestampCustom(unittest.TestCase):
         self.assertEqual(sorted_row, time_row)
         print(self.dataplot)
 
-
-if __name__ == "__main__":
-    unittest.main()

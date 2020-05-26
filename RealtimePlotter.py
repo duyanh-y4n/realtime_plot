@@ -7,6 +7,7 @@
 from DataPlot import *
 import matplotlib.pyplot as plt
 import numpy as np
+import traceback
 
 # TODO: use enum for exceptions
 
@@ -27,6 +28,13 @@ class RealtimePlotter(object):
             raise TypeError('dataplot not type class DataPlot')
 
     def config_plots(self, axes, y_labels=[], ylim=[], x_label=''):
+        """config_plots.
+
+        :param axes: pyplot axes, where we should put data on
+        :param y_labels: list of labels, in case drawing multiple data
+        :param ylim: y axis limit
+        :param x_label: x axis label
+        """
         self.axes = axes
         # TODO: implement numpy in dataplot.py
         data = np.array(self.dataplot.get_data_as_matrix())
@@ -34,27 +42,33 @@ class RealtimePlotter(object):
         # print(data)
         # set limits
         # TODO: auto ylim (cause bug, not work yet!!)
-        if ylim == [] and self.dataplot.option in [DataplotOption.TIMESTAMP_AUTO, DataplotOption.TIMESTAMP_CUSTOM]:
-            # last row is x-axis and wont be counted
-            ylim = [
-                np.min(data[:-1]),
-                np.max(data[:-1])
-            ]
-        elif ylim == [] and self.dataplot.option == DataplotOption.TIMESTAMP_NONE:
-            ylim = [
-                np.min(data[:])*0.9,
-                np.max(data[:])*1.1
-            ]
+        try:
+            if ylim == [] and self.dataplot.option in [DataplotOption.TIMESTAMP_AUTO, DataplotOption.TIMESTAMP_CUSTOM]:
+                # last row is x-axis and wont be counted
+                ylim = [
+                    np.min(data[:-1]),
+                    np.max(data[:-1])
+                ]
+            elif ylim == [] and self.dataplot.option == DataplotOption.TIMESTAMP_NONE:
+                ylim = [
+                    np.min(data[:])*0.9,
+                    np.max(data[:])*1.1
+                ]
+        except Exception as e:
+            traceback.print_tb()
         # print(ylim)
         self.axes.set_ylim(ylim)
         self.lines = []
         # set labels and legends
         # if y_labels == []:
-        if len(y_labels) != self.dataplot.row:
-            self.y_labels = []
-            for i in range(self.dataplot.row):
-                self.y_labels.append('sensor '+str(i))
+        if len(y_labels) > self.dataplot.row:
+            self.y_labels = y_labels[:self.dataplot.row]
+        elif len(y_labels) < self.dataplot.row:
+            self.y_labels = y_labels
+            for i in range(self.dataplot.row-len(y_labels)):
+                self.y_labels.append('unknown' + str(i))
         else:
+            print('set labels ok')
             self.y_labels = y_labels
         if x_label == '' and self.dataplot.option == DataplotOption.TIMESTAMP_AUTO:
             self.axes.set_xlabel(

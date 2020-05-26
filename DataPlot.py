@@ -65,6 +65,7 @@ class DataPlot(object):
             self.timestamp = TimeStamp(time_type=time_type)
             self.time_ticks = deque(maxlen=col)
         if self.option == DataplotOption.TIMESTAMP_CUSTOM:
+            self.row = len(self.data_regs)
             self.time_ticks = deque(maxlen=col)
 
     def __str__(self):
@@ -101,6 +102,8 @@ class DataPlot(object):
                 # not supported be cause timestamp can generate multiple ticks but it make no sense
                 raise Exception(
                     DataPlotException.DATAPLOT_APPEND_MULTIMODE_UNSUPPORTED_BY_OPTION.value)
+
+            # TODO: bug, last
             elif self.option == DataplotOption.TIMESTAMP_CUSTOM:
                 if np.array(x).size == 0 and len(y[0]) != 0:
                     raise Exception(
@@ -108,7 +111,8 @@ class DataPlot(object):
                 elif len(x) != len(y[0]):
                     raise Exception(
                         DataPlotException.DATAPLOT_APPEND_MULTIMODE_X_AND_Y_DIFF_LEN.value)
-                self.time_ticks.extend(x)
+                else:
+                    self.time_ticks.extend(x)
 
     def get_data_as_matrix(self):
         """get data as 2d list (last row will be time ticks if timestamp enable)

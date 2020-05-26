@@ -7,7 +7,8 @@
 
 from enum import Enum
 import redis
-from RealtimeDataMessage import *
+# from RealtimeDataMessage import *
+from .RealtimeDataMessage import *
 
 
 class SensorMeshBaseException(Enum):

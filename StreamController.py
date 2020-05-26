@@ -7,9 +7,9 @@
 
 import redis
 import time
-from RealtimeDataMessage import *
+from .RealtimeDataMessage import *
 from enum import Enum
-from SensorMeshBase import SensorMeshUpstream
+from .SensorMeshBase import SensorMeshUpstream
 
 
 class StreamControllerException(Enum):
