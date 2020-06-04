@@ -7,6 +7,7 @@
 import unittest
 import matplotlib.pyplot as plt
 import numpy as np
+import context
 from RealtimePlotter import *
 import time
 

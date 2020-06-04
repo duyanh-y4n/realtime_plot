@@ -6,6 +6,7 @@
 # Last Modified By: Duy Anh Pham <duyanh.y4n.pham@gmail.com>
 import unittest
 import numpy as np
+import context
 from RealtimeDataMessage import *
 
 test_sensor = DEFAULT_DEVICE_NAME
